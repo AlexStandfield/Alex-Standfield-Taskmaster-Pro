@@ -1,5 +1,6 @@
 var tasks = {};
 
+
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
@@ -17,6 +18,7 @@ var createTask = function(taskText, taskDate, taskList) {
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
 };
+
 
 var loadTasks = function() {
   tasks = JSON.parse(localStorage.getItem("tasks"));
@@ -40,9 +42,11 @@ var loadTasks = function() {
   });
 };
 
+
 var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
+
 
 $(".list-group").on("click", "p", function(){
   let text = $(this)
@@ -54,6 +58,7 @@ $(".list-group").on("click", "p", function(){
     .addClass("form-control")
     .val(text)
 });
+
 
 $(".list-group").on("blur", "textarea", function() {
   // Get the textarea's current value/text
@@ -105,6 +110,7 @@ $(".list-group").on("click", "span", function() {
   dateInput.trigger("focus");
 });
 
+
 // Value of Due Date was Changed
 $(".list-group").on("blur", "input[type='text']", function () {
   // Get Current Text
@@ -136,17 +142,20 @@ $(".list-group").on("blur", "input[type='text']", function () {
   $(this).replaceWith(taskSpan);
 });
 
+
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
   // clear values
   $("#modalTaskDescription, #modalDueDate").val("");
 });
 
+
 // modal is fully visible
 $("#task-form-modal").on("shown.bs.modal", function() {
   // highlight textarea
   $("#modalTaskDescription").trigger("focus");
 });
+
 
 // save button in modal was clicked
 $("#task-form-modal .btn-primary").click(function() {
@@ -170,6 +179,7 @@ $("#task-form-modal .btn-primary").click(function() {
   }
 });
 
+
 // remove all tasks
 $("#remove-tasks").on("click", function() {
   for (var key in tasks) {
@@ -178,6 +188,76 @@ $("#remove-tasks").on("click", function() {
   }
   saveTasks();
 });
+
+
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function (event) {
+    console.log("activate", this)
+  },
+  deactivate: function (event) {
+    console.log("deactivate", this)
+  },
+  over: function (event) {
+    console.log("over", event.target)
+  },
+  out: function (event) {
+    console.log("out", event.target)
+  },
+  update: function (event) {
+    let tempArr = [];
+
+    // Loop over current set of children in sortable list
+    $(this).children().each(function() {
+      let text = $(this)
+        .find("p")
+        .text()
+        .trim();
+
+      let date = $(this)
+        .find("span")
+        .text()
+        .trim();
+
+      // Add Task Data to the temp array as an Object
+      tempArr.push({
+        text: text,
+        date: date
+      });
+    });
+
+    // Trim Down List's ID to Match Object Property
+    let arrName = $(this)
+    .attr("id")
+    .replace("list-", "");
+    
+    // Update Array on Tasks Object and Save
+    tasks[arrName] = tempArr;
+    saveTasks();
+    
+    console.log(tempArr);
+  }
+});
+
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function (event, ui) {
+    console.log("drop");
+    ui.draggable.remove();
+  },
+  over: function (event, ui) {
+    console.log("over");
+  },
+  out: function (event, ui) {
+    console.log("out");
+  }
+});
+
 
 // load tasks for the first time
 loadTasks();
