@@ -4,9 +4,11 @@ var tasks = {};
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
+
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
     .text(taskDate);
+
   var taskP = $("<p>")
     .addClass("m-1")
     .text(taskText);
@@ -14,6 +16,8 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  // Check Due Date
+  auditTask(taskLi);
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -35,6 +39,7 @@ var loadTasks = function() {
 
   // loop over object properties
   $.each(tasks, function(list, arr) {
+    console.log(list, arr);
     // then loop over sub-array
     arr.forEach(function(task) {
       createTask(task.text, task.date, list);
@@ -106,40 +111,41 @@ $(".list-group").on("click", "span", function() {
   // Swap Out Elements
   $(this).replaceWith(dateInput);
 
+  // Enable jquery ui datepicker
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function () {
+      // When Calendar is Closed, Force a "change" Event on the "dateInput"
+      $(this).trigger("change");
+    }
+  });
+
   // Automatically Focus on New Element
   dateInput.trigger("focus");
 });
 
 
 // Value of Due Date was Changed
-$(".list-group").on("blur", "input[type='text']", function () {
+$(".list-group").on("change", "input[type='text']", function () {
   // Get Current Text
-  let date = $(this)
-    .val()
-    .trim();
+  let date = $(this).val()
 
   // Get the Parent ul's id attribute
-  let status = $(this)
-    .closest(".list-group")
-    .attr("id")
-    .replace("list-", "");
-
+  let status = $(this).closest(".list-group").attr("id").replace("list-", "");
   // Get the Tasks Position in the List of Other li Elements
-  let index = $(this)
-    .closest("list-group-item")
-    .index();
+  let index = $(this).closest("list-group-item").index();
 
   // Update Task in Array and Re-save to Local Storage
   tasks[status][index].date = date;
   saveTasks();
 
   // Recreate span Element with Bootstrap Classes
-  var taskSpan = $("<span>")
-    .addClass("badge badge-primary badge-pill")
-    .text(date);
-
+  let taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
   // Replace input with span Element
   $(this).replaceWith(taskSpan);
+
+  // Pass Task's <li> Element into auditTask() to Check New Due Date
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 
@@ -257,6 +263,27 @@ $("#trash").droppable({
     console.log("out");
   }
 });
+
+
+$("#modalDueDate").datepicker({
+  minDate: 1
+});
+
+let auditTask = function(taskEl) {
+  // Get Date from Task Element
+  let date = $(taskEl).find("span").text().trim()
+
+  // Convert to Moment Object at 5:00pm
+  let time = moment(date, "L").set("hour", 17);
+  
+  // Apply New Class if Task is near/over Due Date
+  if (moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  } else if (Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+
+};
 
 
 // load tasks for the first time
