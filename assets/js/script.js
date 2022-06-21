@@ -1,17 +1,13 @@
-var tasks = {};
+let tasks = {};
 
 
-var createTask = function(taskText, taskDate, taskList) {
+let createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
-  var taskLi = $("<li>").addClass("list-group-item");
+  let taskLi = $("<li>").addClass("list-group-item");
 
-  var taskSpan = $("<span>")
-    .addClass("badge badge-primary badge-pill")
-    .text(taskDate);
+  let taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(taskDate);
 
-  var taskP = $("<p>")
-    .addClass("m-1")
-    .text(taskText);
+  let taskP = $("<p>").addClass("m-1").text(taskText);
 
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
@@ -24,7 +20,7 @@ var createTask = function(taskText, taskDate, taskList) {
 };
 
 
-var loadTasks = function() {
+let loadTasks = function() {
   tasks = JSON.parse(localStorage.getItem("tasks"));
 
   // if nothing in localStorage, create a new object to track all task status arrays
@@ -48,47 +44,34 @@ var loadTasks = function() {
 };
 
 
-var saveTasks = function() {
+let saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
 
 $(".list-group").on("click", "p", function(){
-  let text = $(this)
-    .text()
-    .trim();
+  let text = $(this).text().trim();
   let textInput = $("<textarea>");
   $(this).replaceWith(textInput);
-  textInput.trigger("focus")
-    .addClass("form-control")
-    .val(text)
+  textInput.trigger("focus").addClass("form-control").val(text)
 });
 
 
 $(".list-group").on("blur", "textarea", function() {
   // Get the textarea's current value/text
-  let text = $(this)
-    .val()
-    .trim();
+  let text = $(this).val().trim();
 
   // Get the parents ul's id attribute
-  var status = $(this)
-    .closest(".list-group")
-    .attr("id")
-    .replace("list-", "");
+  let status = $(this).closest(".list-group").attr("id").replace("list-", "");
 
   // Get the task's position in the list of other li elements
-  var index = $(this)
-    .closest(".list-group-item")
-    .index();
+  let index = $(this).closest(".list-group-item").index();
 
   tasks[status][index].text = text;
   saveTasks();
 
   // Recreate p element
-  var taskP = $("<p>")
-    .addClass("m-1")
-    .text(text)
+  let taskP = $("<p>").addClass("m-1").text(text)
 
   // Replace textarea with p element
   $(this).replaceWith(taskP);
@@ -98,15 +81,10 @@ $(".list-group").on("blur", "textarea", function() {
 // Due Date was Clicked
 $(".list-group").on("click", "span", function() {
   // Get Current Text
-  let date = $(this)
-    .text()
-    .trim();
+  let date = $(this).text().trim();
 
   // Create New Input Element
-  let dateInput = $("<input>")
-    .attr("type", "text")
-    .addClass("form-control")
-    .val(date);
+  let dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
 
   // Swap Out Elements
   $(this).replaceWith(dateInput);
@@ -166,8 +144,8 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 // save button in modal was clicked
 $("#task-form-modal .btn-primary").click(function() {
   // get form values
-  var taskText = $("#modalTaskDescription").val();
-  var taskDate = $("#modalDueDate").val();
+  let taskText = $("#modalTaskDescription").val();
+  let taskDate = $("#modalDueDate").val();
 
   if (taskText && taskDate) {
     createTask(taskText, taskDate, "toDo");
@@ -188,7 +166,7 @@ $("#task-form-modal .btn-primary").click(function() {
 
 // remove all tasks
 $("#remove-tasks").on("click", function() {
-  for (var key in tasks) {
+  for (let key in tasks) {
     tasks[key].length = 0;
     $("#list-" + key).empty();
   }
@@ -218,15 +196,9 @@ $(".card .list-group").sortable({
 
     // Loop over current set of children in sortable list
     $(this).children().each(function() {
-      let text = $(this)
-        .find("p")
-        .text()
-        .trim();
+      let text = $(this).find("p").text().trim();
 
-      let date = $(this)
-        .find("span")
-        .text()
-        .trim();
+      let date = $(this).find("span").text().trim();
 
       // Add Task Data to the temp array as an Object
       tempArr.push({
@@ -236,9 +208,7 @@ $(".card .list-group").sortable({
     });
 
     // Trim Down List's ID to Match Object Property
-    let arrName = $(this)
-    .attr("id")
-    .replace("list-", "");
+    let arrName = $(this).attr("id").replace("list-", "");
     
     // Update Array on Tasks Object and Save
     tasks[arrName] = tempArr;
